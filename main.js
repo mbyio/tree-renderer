@@ -5,9 +5,14 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function main() {
-    var canvas = document.getElementById('mainCanvas');
-    var ctx = canvas.getContext('2d');
-    drawTree(ctx, 5);
+    var viewport = document.getElementById("gameViewport");
+    var width = 800;
+    var height = 600;
+    var canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    viewport.appendChild(canvas);
+    drawTree(canvas.getContext("2d"), 10);
 }
 
 function drawTree(ctx, numLevels) {
@@ -26,12 +31,12 @@ function drawTree(ctx, numLevels) {
         ctx.lineTo(newX, newY);
         ctx.stroke();
 
-        var numBranches = 1 + Math.floor(Math.random() * 3);
+        var numBranches = Math.ceil(Math.random() * 4);
         for (var i = 0; i < numBranches; i++) {
             drawTreeHelper(
                 currentLevel - 1,
                 newX, newY,
-                angle + (Math.random() * 50 - 5)
+                angle + (Math.random() * 180 - 90)
             );
         }
     }
