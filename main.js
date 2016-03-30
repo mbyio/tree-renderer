@@ -2,36 +2,69 @@
 
 document.addEventListener("DOMContentLoaded", function() {
     if (document.readyState === "interactive") {
-        main();
+        onDrawLSystem();
     }
 });
 
-function main() {
-    let viewport = document.getElementById("gameViewport");
-    let width = 800;
-    let height = 600;
-    let canvas = document.createElement('canvas');
-    let ctx = canvas.getContext('2d');
-    canvas.width = width;
-    canvas.height = height;
-    viewport.appendChild(canvas);
-
-    // L System expansion
-    let rules = [
-        {match: '1', out: '11'},
-        {match: '0', out: '1[0]0'}
-    ];
-    let expansions = ['0'];
-    for (let i = 0; i < 6; i++) {
-        expansions.push(expandLSystem(expansions[i], rules));
+function onExpandLSystem() {
+    let rules = [];
+    for (let i = 1; i <= 4; i++) {
+        let match = document.getElementById('lm' + i).value;
+        let out = document.getElementById('lr' + i).value;
+        if (match.length === 0 || out.length === 0) {
+            continue;
+        } else if (match.length > 1) {
+            throw new Error('Match is too long');
+        }
+        rules.push({match: match, out: out});
     }
-    console.log('L System expansions:');
-    console.log(expansions);
+    if (rules.length === 0) {
+        throw new Error('No rules defined.');
+    }
+    let start = document.getElementById('lSystemStart').value;
+    if (start.length === 0) {
+        throw new Error('Start is too short.');
+    }
+    let numIterations = document.getElementById('numIterations').value;
+    console.log('expanding l system');
+    console.log('rules:');
+    console.log(rules);
+    let lastExpansion = start;
+    for (let i = 0; i < numIterations; i++) {
+        lastExpansion = expandLSystem(lastExpansion, rules);
+    }
+    console.log('expansion: ' + lastExpansion);
+    document.getElementById('lSystemOut').innerHTML = lastExpansion;
+}
 
+function expandLSystem(s, rules) {
+    let out = '';
+    charLoop: for (let c of s) {
+        for (let rule of rules) {
+            if (rule.match == c) {
+                out += rule.out
+                continue charLoop;
+            }
+        }
+        out += c;
+    }
+    return out;
+}
+
+function onDrawLSystem() {
+    onExpandLSystem();
+    let s = document.getElementById('lSystemOut').innerHTML;
+    let canvas = document.getElementById('gameCanvas');
+    let ctx = canvas.getContext('2d');
+    let width = canvas.width;
+    let height = canvas.height;
+    ctx.clearRect(0, 0, width, height);
+
+    console.log('drawing l system');
     // Generate the graph
     let adjStack = [{pos: [width / 2,0], scale: 1, rot: 90}];
-    let baseMagnitude = 5;
-    let s = expansions[expansions.length - 1];
+    let baseMagnitude = document.getElementById('magnitude').value;
+    let scaleMult = document.getElementById('scaleMult').value;
     let i = 0;
     // Putting the loop body into a function lets it act like a coroutine
     ctx.strokeStyle = 'rgb(255,0,0)';
@@ -50,7 +83,7 @@ function main() {
             console.log('[');
             adjStack.push({
                 pos: [lastAdj.pos[0], lastAdj.pos[1]],
-                scale: lastAdj.scale * .5,
+                scale: lastAdj.scale * scaleMult,
                 rot: lastAdj.rot + 45
             });
             console.log(adjStack[adjStack.length - 1]);
@@ -59,7 +92,7 @@ function main() {
             adjStack.pop();
             lastAdj = adjStack[adjStack.length - 1];
             lastAdj.rot -= 45;
-            lastAdj.scale *= .5;
+            lastAdj.scale *= scaleMult;
             console.log(lastAdj);
         } else if (c === '1') {
             let rads = lastAdj.rot / 180 * Math.PI;
@@ -85,20 +118,5 @@ function main() {
         }
         window.requestAnimationFrame(drawOne);
     }
-    console.log('Starting to draw');
     drawOne();
-}
-
-function expandLSystem(s, rules) {
-    let out = '';
-    charLoop: for (let c of s) {
-        for (let rule of rules) {
-            if (rule.match == c) {
-                out += rule.out
-                continue charLoop;
-            }
-        }
-        out += c;
-    }
-    return out;
 }
