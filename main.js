@@ -25,7 +25,7 @@ function onExpandLSystem() {
     if (start.length === 0) {
         throw new Error('Start is too short.');
     }
-    let numIterations = document.getElementById('numIterations').value;
+    let numIterations = document.getElementById('numIterations').valueAsNumber;
     console.log('expanding l system');
     console.log('rules:');
     console.log(rules);
@@ -63,8 +63,9 @@ function onDrawLSystem() {
     console.log('drawing l system');
     // Generate the graph
     let adjStack = [{pos: [width / 2,0], scale: 1, rot: 90}];
-    let baseMagnitude = document.getElementById('magnitude').value;
-    let scaleMult = document.getElementById('scaleMult').value;
+    let baseMagnitude = document.getElementById('magnitude').valueAsNumber;
+    let scaleMult = document.getElementById('scaleMult').valueAsNumber;
+    let jitterEnabled = document.getElementById('jitterCheckbox').checked;
     let i = 0;
     // Putting the loop body into a function lets it act like a coroutine
     ctx.strokeStyle = 'rgb(255,0,0)';
@@ -81,25 +82,27 @@ function onDrawLSystem() {
         let lastAdj = adjStack[adjStack.length - 1];
         if (c === '[') {
             console.log('[');
+            let scale = lastAdj.scale * (scaleMult + jitter(jitterEnabled, .1));
             adjStack.push({
                 pos: [lastAdj.pos[0], lastAdj.pos[1]],
-                scale: lastAdj.scale * scaleMult,
-                rot: lastAdj.rot + 45
+                scale: lastAdj.scale * (scaleMult + jitter(jitterEnabled, .1)),
+                rot: lastAdj.rot + 45 + jitter(jitterEnabled, 30)
             });
             console.log(adjStack[adjStack.length - 1]);
         } else if (c === ']') {
             console.log(']');
             adjStack.pop();
             lastAdj = adjStack[adjStack.length - 1];
-            lastAdj.rot -= 45;
-            lastAdj.scale *= scaleMult;
+            lastAdj.rot -= 45 + jitter(jitterEnabled, 30);
+            lastAdj.scale *= scaleMult + jitter(jitterEnabled, .1);
             console.log(lastAdj);
         } else if (c === '1') {
             let rads = lastAdj.rot / 180 * Math.PI;
+            let scaledMag = baseMagnitude * (lastAdj.scale + jitter(jitterEnabled, .1));
             let newX = lastAdj.pos[0] +
-                baseMagnitude * lastAdj.scale * Math.cos(rads);
+                scaledMag * Math.cos(rads);
             let newY = lastAdj.pos[1] +
-                baseMagnitude * lastAdj.scale * Math.sin(rads);
+                scaledMag * Math.sin(rads);
             console.log('Drawing segment from (' +
                         lastAdj.pos[0] + ',' + lastAdj.pos[1] + ') to (' +
                        newX + ',' + newY + ')');
@@ -111,7 +114,7 @@ function onDrawLSystem() {
             lastAdj.pos[1] = newY;
         } else if (c === '0') {
             console.log('drawing leaf at (' + lastAdj.pos[0] + ',' + lastAdj.pos[1] + ')');
-            let size = baseMagnitude * lastAdj.scale;
+            let size = baseMagnitude * (lastAdj.scale + jitter(jitterEnabled, .1));
             ctx.fillRect(lastAdj.pos[0] - size,
                          height - lastAdj.pos[1] + size,
                          size, size);
@@ -119,4 +122,12 @@ function onDrawLSystem() {
         window.requestAnimationFrame(drawOne);
     }
     drawOne();
+}
+
+function jitter(enabled, magnitude) {
+    if (!enabled) {
+        return 0;
+    }
+    let v = Math.random() * magnitude - magnitude / 2;
+    return v;
 }

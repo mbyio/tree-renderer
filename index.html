@@ -16,10 +16,12 @@
       <h1>L System Demo</h1>
       <h2>Viewport</h2>
       <h3>Magnitude</h3>
-      <input type="range" id="magnitude" min="1" max="20">
+      <input type="range" id="magnitude" min="1" max="20" value="5">
       <h3>Scale Multiplier</h3>
       <input type="range" id="scaleMult" min="0" max="1" step="0.01" value="0.8">
-      <button id="drawLSystem" onclick="onDrawLSystem()">Draw L System</button>
+      <h3>Jitter</h3>
+      <input type="checkbox" id="jitterCheckbox">
+      <br><button id="drawLSystem" onclick="onDrawLSystem()">Draw L System</button>
       <div id="gameViewport" style="margin: 0 auto;">
         <canvas id="gameCanvas" width="800" height="600">
       </div>
