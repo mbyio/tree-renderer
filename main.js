@@ -115,8 +115,8 @@ function onDrawLSystem() {
         } else if (c === '0') {
             console.log('drawing leaf at (' + lastAdj.pos[0] + ',' + lastAdj.pos[1] + ')');
             let size = baseMagnitude * (lastAdj.scale + jitter(jitterEnabled, .1));
-            ctx.fillRect(lastAdj.pos[0] - size,
-                         height - lastAdj.pos[1] + size,
+            ctx.fillRect(lastAdj.pos[0] - size / 2,
+                         height - lastAdj.pos[1] - size / 2,
                          size, size);
         }
         window.requestAnimationFrame(drawOne);
